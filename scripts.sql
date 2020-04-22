@@ -47,8 +47,31 @@ order by votos desc
 limit 0,3;
 
 
-
---------------------------------
+-------------------------------
+-- PASO 3 - Competencias por Genero
 -- Modificamos la tabla para agregar ref de genero
-alter table competencias.competencia add column genero_id int unsigned, 
+
+alter table competencias.competencia 
+add column genero_id int unsigned, 
 add constraint fk_genero foreign key (genero_id) references competencias.genero(id);
+
+select g.id, g.nombre from genero g; 
+
+-- buscar peliculas por genero de competencia
+
+
+SET @idGenero = 8;
+Select p.titulo, p.poster, p.id, p.genero_id from pelicula p 
+ where  
+ (@idGenero is null or p.genero_id = @idGenero)
+order by rand() 
+limit 0,2;
+
+----------------------------------------------------------
+--- Guia 3 paso 4 ----------------------------------------
+ALTER TABLE competencia 
+ADD COLUMN director_id int unsigned,
+ADD CONSTRAINT fk_director
+FOREIGN KEY (director_id) REFERENCES competencias.director (id);
+
+select * from competencia;

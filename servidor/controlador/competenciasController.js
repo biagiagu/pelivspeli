@@ -24,22 +24,31 @@ function obternerCompetencia(request, response){
 function obtenerOpciones(request, response){
 
     let idComp = request.params.id;
-    let queryPeliculas= `SELECT p.titulo, p.poster, p.id FROM pelicula p ORDER BY RAND() LIMIT 0,2`;
-    let queryCompetencia= `SELECT c.pregunta FROM competencia c WHERE id='${idComp}'`;
-
+	
+	
+    let queryCompetencia= `SELECT c.pregunta, c.genero_id FROM competencia c WHERE id='${idComp}'`;
+	
     conexiondb.query(queryCompetencia, function(error, result){
-        if (error){
-            console.log('Error!!!!', error);
+		if (error){
+			console.log('Error!!!!', error);
             throw error;
         }
         
         console.log(result);
-
+		
         if (result.length==0){
-             response.status(404).send("no encontramos esa competencia");
-             return;
+			response.status(404).send("no encontramos esa competencia");
+			return;
         }
-        conexiondb.query(queryPeliculas, function(error, result2){
+		
+		let queryPeliculas= `
+		Select p.titulo, p.poster, p.id, p.genero_id from pelicula p 
+		where  
+		(${result[0].genero_id} is null or p.genero_id = ${result[0].genero_id})
+		order by rand() 
+		limit 0,2;`;
+		
+		conexiondb.query(queryPeliculas, function(error, result2){
             if (error){
                 console.log('Error!!!!', error);
                 throw error;
@@ -101,24 +110,37 @@ function guardarVoto(request, response){
 function crearCompetencia(request, response){
 
 	let idCompetencia = request.params.id; //llega por parametro en la URL
-    let nombreCompetencia = request.body.nombre.trim(); //llega en el Body del request
-    
-    //definimos los query para buscar en la tabla de Votos si tiene votos previos
-    // let querySelect = `select * from votos where pelicula_id = '${idPelicula}' and competencia_id = '${idCompetencia}'`;
-	let queryInsert = `INSERT INTO competencia (pregunta) VALUES ("${nombreCompetencia}")`;
-	let querySelect = `select * from competencia where trim(lower(pregunta))=lower("${nombreCompetencia}")`;
+	let nombreCompetencia = request.body.nombre.trim(); //llega en el Body del request
+
+	let genero = request.body.genero==0?null:request.body.genero;
+	let director = request.body.director==0?null:request.body.director;
+	
+	let queryDirectorGenero =`SELECT COUNT(*) AS cantidad 
+	FROM competencia WHERE trim(lower(pregunta)) = lower("${nombreCompetencia}")
+	UNION all
+	SELECT COUNT(distinct p.id) AS cantidad 
+	FROM pelicula p, director_pelicula dp 
+	WHERE p.id = dp.pelicula_id 
+	AND (${director} is NULL OR dp.director_id = ${director})
+	AND (${genero} is NULL OR p.genero_id = ${genero});`;
+	
+	//let querySelect = `select * from competencia where trim(lower(pregunta))=lower("${nombreCompetencia}")`;
+        
+	let queryInsert = `INSERT INTO competencia (pregunta, genero_id, director_id) VALUES ("${nombreCompetencia}", ${genero}, ${director})`;
     
 	
-	conexiondb.query(querySelect, function(error, result){
+	conexiondb.query(queryDirectorGenero, function(error, result){
 		if (error) {
 			console.log('error!!', error);
 			throw error;
 		}
+
+		Aca tenemos que agregar el if para chequear las condiciones
 		
-		if(result.length!=0){
-			response.status(422).send('la competencia ya existe!');
-			return;
-		}
+		// if(result.length!=0){
+		// 	response.status(422).send('Una competencia ya existe con ese nombre!');
+		// 	return;
+		// }
 
 		conexiondb.query(queryInsert, function(error, results){
 			if (error) {
@@ -209,12 +231,46 @@ function reiniciarCompetencia(request, response){
 	})
 }
 
+function obtenerGeneros(request, response){
+
+	let querySelect = 'select g.id, g.nombre from genero g;';
+
+	conexiondb.query(querySelect, function(error, results){
+        if (error) {
+            console.log('error!!', error);
+            throw error;
+        }
+          
+        // enviamos la respuesta
+        response.send(JSON.stringify(results));
+    })
+
+}
+
+function obtenerDirectores(request, response){
+	
+	let querySelect = 'select d.id, d.nombre from director d;';
+
+	conexiondb.query(querySelect, function(error, results){
+        if (error) {
+            console.log('error!!', error);
+            throw error;
+        }
+          
+        // enviamos la respuesta
+        response.send(JSON.stringify(results));
+    })
+
+}
+
 module.exports = {
     obternerCompetencia:	obternerCompetencia,
     obtenerOpciones: 		obtenerOpciones,
 	guardarVoto: 			guardarVoto,
 	crearCompetencia: 		crearCompetencia,
 	obtenerResultados: 		obtenerResultados,
-	reiniciarCompetencia:	reiniciarCompetencia
+	reiniciarCompetencia:	reiniciarCompetencia,
+	obtenerGeneros:			obtenerGeneros,
+	obtenerDirectores:		obtenerDirectores
 }
 

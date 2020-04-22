@@ -35,6 +35,11 @@ app.get('/competencias/:id/resultados', competenciaController.obtenerResultados)
 app.post('/competencias/', competenciaController.crearCompetencia);
 //Ejercicio  reiniciar
 app.delete('/competencias/:id/votos', competenciaController.reiniciarCompetencia);
+//obtener el listado de Generos
+app.get('/generos', competenciaController.obtenerGeneros);
+//obtener el listado de Directores
+app.get('/directores', competenciaController.obtenerDirectores);
+
 
 
 // este es el puerto donde vamos a estar escuchando la app y activamos la app
