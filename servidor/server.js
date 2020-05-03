@@ -26,27 +26,27 @@ var competenciaController=require('./controlador/competenciasController');
 //Lista todos las competencias
 app.get('/competencias', competenciaController.listarCompetencias);
 //busca las peliculas para que compitan
-app.get('/competencias/:id/peliculas', competenciaController.obtenerOpciones);
+app.get('/competencias/:id/peliculas', competenciaController.obtenerOpciones);// ok
 //guardar los Votos
-app.post('/competencias/:id/voto', competenciaController.guardarVoto);
+app.post('/competencias/:id/voto', competenciaController.guardarVoto); //ok
 //obtener los resultados de las competencias
-app.get('/competencias/:id/resultados', competenciaController.obtenerResultados);
+app.get('/competencias/:id/resultados', competenciaController.obtenerResultados); //ok
 //guarda nuevas competencias
-app.post('/competencias/', competenciaController.crearCompetencia);
+app.post('/competencias/', competenciaController.crearCompetencia); //ok
 //Ejercicio  reiniciar
-app.delete('/competencias/:id/votos', competenciaController.reiniciarCompetencia);
+app.delete('/competencias/:id/votos', competenciaController.reiniciarCompetencia); //ok
 //obtener el listado de Generos
-app.get('/generos', competenciaController.obtenerGeneros);
+app.get('/generos', competenciaController.obtenerGeneros); // ok
 //obtener el listado de Directores
-app.get('/directores', competenciaController.obtenerDirectores);
+app.get('/directores', competenciaController.obtenerDirectores); //ok
 //Obtener el listado de Actores
-app.get('/actores', competenciaController.obtenerActores);
+app.get('/actores', competenciaController.obtenerActores); // ok 
 //Borrar Competencias
-app.delete('/competencias/:id', competenciaController.eliminarCompetencia);
+app.delete('/competencias/:id', competenciaController.eliminarCompetencia); //ok
 //Obtener una competencia
-app.get('/competencias/:id/', competenciaController.obtenerCompetencia);
+app.get('/competencias/:id/', competenciaController.obtenerCompetencia); //ok
 //editar competencia
-app.put('/competencias/:id/', competenciaController.editarCompetencia);
+app.put('/competencias/:id/', competenciaController.editarCompetencia); //ok
     
 
 

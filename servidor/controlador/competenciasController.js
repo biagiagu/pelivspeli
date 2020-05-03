@@ -181,7 +181,7 @@ function obtenerResultados (request, response){
 		};
 
 		if (result.length != 1){
-			response.status(400).send('no se ha encontrado la competencia');
+			response.status(404).send('no se ha encontrado la competencia');
 			return;
 		};
 		
@@ -222,7 +222,7 @@ function reiniciarCompetencia(request, response){
 		}
 
 		if(result.length==0){
-			response.status(422).send('la competencia no existe!');
+			response.status(404).send('la competencia no existe!');
 			return;
 		}
 
@@ -295,7 +295,7 @@ function eliminarCompetencia(request, response) {
 		conexiondb.query(queryBuscarCompetencia, function(error, result){
 			
 			if (result.length==0) {
-				response.status(422).send('Competencia Inexistente');
+				response.status(404).send('Competencia Inexistente');
 				return;
 			}
 
@@ -330,7 +330,7 @@ function obtenerCompetencia(request, response) {
 		if (error) throw error;
 
 		if (result.length == 0) {
-			res.status(422).send("No se ha encontrado la competencia");
+			res.status(404).send("No se ha encontrado la competencia");
 			return
 		}
 
@@ -365,7 +365,7 @@ function editarCompetencia(request, response) {
 	conexiondb.query(queryBuscarCompetencia, function(error, result){
 			
 		if (result.length==0) {
-			response.status(422).send('Competencia Inexistente');
+			response.status(404).send('Competencia Inexistente');
 			return;
 		}
 		
