@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 //llamamos al controlador
-var competenciaController=require('./controlador/competenciasController')
+var competenciaController=require('./controlador/competenciasController');
 
 
 //definimos una ruta para competencias (endpoints de la app)

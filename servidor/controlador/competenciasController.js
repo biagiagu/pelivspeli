@@ -311,16 +311,47 @@ function eliminarCompetencia(request, response) {
 
 function obtenerCompetencia(request, response) {  
 	
-		let idComp = request.params.id
-		let queryBuscarCompetencia = `select * from competencia WHERE id = ${idComp};`
+	let idComp = request.params.id;
+	let queryChequear = `Select * from competencia where id = ${idComp}`
+    let querySelect = `SELECT  C.id, C.pregunta competencia ,G.NOMBRE genero, D.NOMBRE director, A.NOMBRE actor
+				FROM
+					COMPETENCIA C
+				LEFT JOIN GENERO G ON 
+					G.ID = C.GENERO_ID
+				LEFT JOIN DIRECTOR D ON 
+					D.ID = C.DIRECTOR_ID
+				LEFT JOIN ACTOR A ON   
+					A.ID = C.ACTOR_ID
+				WHERE C.id=${idComp};`;
+  
 	
-		conexiondb.query(queryBuscarCompetencia, function (error, result) {
-			if (error) {
-				console.log("ERROR", error)
-				throw error
-			}
-				response.send(JSON.stringify(result[0]));
-			})
+	
+	conexiondb.query(queryChequear, function (error, result) {
+		if (error) throw error;
+
+		if (result.length == 0) {
+			res.status(422).send("No se ha encontrado la competencia");
+			return
+		}
+
+		//Buscamos en la base los datos de la competencia
+		conexiondb.query(querySelect, function (error, resultado) {
+			if (error) throw error;
+			
+			var respuesta = {
+				competencia: resultado[0].id,
+				nombre: resultado[0].competencia,
+				genero_nombre: resultado[0].genero,
+				director_nombre: resultado[0].director,
+				actor_nombre: resultado[0].actor
+			};
+
+			console.log(respuesta)
+			response.send(JSON.stringify(respuesta));
+		})
+	
+	})
+
 
 }
 
