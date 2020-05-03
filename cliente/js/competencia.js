@@ -158,7 +158,7 @@ function CompetenciasController () {
 		    	$("#actor").append("<option value='0'>Todos/as</option>");
 		    	for (i = 0; i < data.length; i++) {
 		    	// Se recorren y cargan uno/a a uno/a los/as actores/actrices retornados por el backend (data es un array de objetos json)
-		    		$("#actor").append("<option value='"+data[i].id+"'>"+data[i].nombre+"</option>");
+		    		$("#actor").append("<option value='" + data[i].id + "'>" + data[i].nombre + "</option>");
 		    	}
 		    });
 	},

@@ -1,7 +1,7 @@
 // Conectamos a la BD
 var conexiondb = require('../lib/conexiondb');
 
-function obternerCompetencia(request, response){
+function listarCompetencias(request, response){
 
     let query = 'select * from competencia';
 
@@ -26,7 +26,7 @@ function obtenerOpciones(request, response){
     let idComp = request.params.id;
 	
 	
-    let queryCompetencia= `SELECT c.pregunta, c.genero_id FROM competencia c WHERE id='${idComp}'`;
+    let queryCompetencia= `SELECT c.pregunta, c.genero_id, c.actor_id, c.director_id FROM competencia c WHERE id='${idComp}'`;
 	
     conexiondb.query(queryCompetencia, function(error, result){
 		if (error){
@@ -42,9 +42,13 @@ function obtenerOpciones(request, response){
         }
 		
 		let queryPeliculas= `
-		Select p.titulo, p.poster, p.id, p.genero_id from pelicula p 
-		where  
-		(${result[0].genero_id} is null or p.genero_id = ${result[0].genero_id})
+		Select distinct p.titulo, p.poster, p.id, p.genero_id from pelicula p, actor_pelicula ap, director_pelicula dp 
+		where
+		ap.pelicula_id = p.id
+		and dp.pelicula_id = p.id
+		and (${result[0].genero_id} is null or p.genero_id = ${result[0].genero_id})
+		and (${result[0].director_id} is null or dp.director_id = ${result[0].director_id})
+		and (${result[0].actor_id} is null or ap.actor_id = ${result[0].actor_id})
 		order by rand() 
 		limit 0,2;`;
 		
@@ -112,39 +116,42 @@ function crearCompetencia(request, response){
 	let idCompetencia = request.params.id; //llega por parametro en la URL
 	let nombreCompetencia = request.body.nombre.trim(); //llega en el Body del request
 
-	let genero = request.body.genero==0?null:request.body.genero;
-	let director = request.body.director==0?null:request.body.director;
+	let genero = request.body.genero == 0 ? null : request.body.genero;
+	let director = request.body.director == 0 ? null : request.body.director;
+	let actor = request.body.actor == 0 ? null : request.body.actor;
 	
-	let queryDirectorGenero =`SELECT COUNT(*) AS cantidad 
-	FROM competencia WHERE trim(lower(pregunta)) = lower("${nombreCompetencia}")
-	UNION all
-	SELECT COUNT(distinct p.id) AS cantidad 
-	FROM pelicula p, director_pelicula dp 
-	WHERE p.id = dp.pelicula_id 
-	AND (${director} is NULL OR dp.director_id = ${director})
-	AND (${genero} is NULL OR p.genero_id = ${genero});`;
-	
-	//let querySelect = `select * from competencia where trim(lower(pregunta))=lower("${nombreCompetencia}")`;
+	let queryDirectorGenero =	`SELECT COUNT(*) AS cantidad 
+								FROM competencia WHERE trim(lower(pregunta)) = lower("${nombreCompetencia}")
+								UNION all
+								SELECT COUNT(distinct p.id) AS cantidad 
+								FROM pelicula p, director_pelicula dp, actor_pelicula ap
+								WHERE p.id = dp.pelicula_id 
+								AND ap.pelicula_id = p.id
+								AND (${director} is NULL OR dp.director_id = ${director})
+								AND (${genero} is NULL OR p.genero_id = ${genero})
+								AND (${actor} is NULL OR ap.actor_id = ${actor});`;
+
         
-	let queryInsert = `INSERT INTO competencia (pregunta, genero_id, director_id) VALUES ("${nombreCompetencia}", ${genero}, ${director})`;
+	let queryInsert = `INSERT INTO competencia (pregunta, genero_id, director_id, actor_id) VALUES ("${nombreCompetencia}", ${genero}, ${director}, ${actor})`;
     
 	
 	conexiondb.query(queryDirectorGenero, function(error, result){
 		if (error) {
-			console.log('error!!', error);
 			throw error;
 		}
 
-		Aca tenemos que agregar el if para chequear las condiciones
-		
-		// if(result.length!=0){
-		// 	response.status(422).send('Una competencia ya existe con ese nombre!');
-		// 	return;
-		// }
+		if(result[0].cantidad !=0){
+			response.status(422).send('La competencia ya existe!');
+			return;
+		}
+
+		if (result[1].cantidad < 2){
+			response.status(422).send('No hay suficientes peliculas para crear la competencia!');
+			return;
+		}
 
 		conexiondb.query(queryInsert, function(error, results){
 			if (error) {
-				console.log('error!!', error);
 				throw error;
 			}       
 			
@@ -263,14 +270,102 @@ function obtenerDirectores(request, response){
 
 }
 
+function obtenerActores(request, response){
+	
+	let querySelect = 'select a.id, a.nombre from actor a;';
+
+	conexiondb.query(querySelect, function(error, results){
+        if (error) {
+            console.log('error!!', error);
+            throw error;
+        }
+          
+        // enviamos la respuesta
+        response.send(JSON.stringify(results));
+    })
+
+}
+
+function eliminarCompetencia(request, response) {  
+	
+		let idComp = request.params.id
+		let queryEliminar = `DELETE from competencia WHERE id = ${idComp};`
+		let queryBuscarCompetencia = `select * from competencia WHERE id = ${idComp};`
+
+		conexiondb.query(queryBuscarCompetencia, function(error, result){
+			
+			if (result.length==0) {
+				response.status(422).send('Competencia Inexistente');
+				return;
+			}
+
+			conexiondb.query(queryEliminar, function (error, result) {
+				if (error) {
+					console.log("ERROR", error)
+					throw error
+				}
+					response.send("Eliminado con exito")
+				})
+		})
+}
+
+function obtenerCompetencia(request, response) {  
+	
+		let idComp = request.params.id
+		let queryBuscarCompetencia = `select * from competencia WHERE id = ${idComp};`
+	
+		conexiondb.query(queryBuscarCompetencia, function (error, result) {
+			if (error) {
+				console.log("ERROR", error)
+				throw error
+			}
+				response.send(JSON.stringify(result[0]));
+			})
+
+}
+
+function editarCompetencia(request, response) {  
+	
+	let idComp = request.params.id;
+	let nombre = request.body.nombre;
+	let queryUpdate = `UPDATE competencia SET pregunta = '${nombre}' where id = ${idComp}`;
+	let queryBuscarCompetencia = `select * from competencia WHERE id = ${idComp};`
+
+	conexiondb.query(queryBuscarCompetencia, function(error, result){
+			
+		if (result.length==0) {
+			response.status(422).send('Competencia Inexistente');
+			return;
+		}
+		
+		conexiondb.query(queryUpdate, function (error, result) {
+			if (error) {
+				console.log("ERROR", error)
+				throw error
+			}
+				response.send("Se ha editado con exito la competencia.");
+			})
+
+		
+	})
+
+
+
+}
+
+
 module.exports = {
-    obternerCompetencia:	obternerCompetencia,
+    listarCompetencias:	listarCompetencias,
     obtenerOpciones: 		obtenerOpciones,
 	guardarVoto: 			guardarVoto,
 	crearCompetencia: 		crearCompetencia,
 	obtenerResultados: 		obtenerResultados,
 	reiniciarCompetencia:	reiniciarCompetencia,
 	obtenerGeneros:			obtenerGeneros,
-	obtenerDirectores:		obtenerDirectores
+	obtenerDirectores:		obtenerDirectores,
+	obtenerActores:			obtenerActores,
+	eliminarCompetencia:	eliminarCompetencia,
+	obtenerCompetencia:		obtenerCompetencia,
+	editarCompetencia: 		editarCompetencia
 }
 

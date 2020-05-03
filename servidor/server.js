@@ -24,7 +24,7 @@ var competenciaController=require('./controlador/competenciasController')
 
 //definimos una ruta para competencias (endpoints de la app)
 //Lista todos las competencias
-app.get('/competencias', competenciaController.obternerCompetencia);
+app.get('/competencias', competenciaController.listarCompetencias);
 //busca las peliculas para que compitan
 app.get('/competencias/:id/peliculas', competenciaController.obtenerOpciones);
 //guardar los Votos
@@ -39,16 +39,24 @@ app.delete('/competencias/:id/votos', competenciaController.reiniciarCompetencia
 app.get('/generos', competenciaController.obtenerGeneros);
 //obtener el listado de Directores
 app.get('/directores', competenciaController.obtenerDirectores);
-
+//Obtener el listado de Actores
+app.get('/actores', competenciaController.obtenerActores);
+//Borrar Competencias
+app.delete('/competencias/:id', competenciaController.eliminarCompetencia);
+//Obtener una competencia
+app.get('/competencias/:id/', competenciaController.obtenerCompetencia);
+//editar competencia
+app.put('/competencias/:id/', competenciaController.editarCompetencia);
+    
 
 
 // este es el puerto donde vamos a estar escuchando la app y activamos la app
 let puerto = 8080;
 
 app.listen(
-    puerto, 
+	puerto, 
     ()=>{
-        console.log(`Estamos escuchando en el puerto ${puerto}`);
+		console.log(`Aplicacion activa escuchando en el puerto ${puerto}`);
         //conectamos a la BD
         conexiondb.connect();
     }

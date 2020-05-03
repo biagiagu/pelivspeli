@@ -74,4 +74,63 @@ ADD COLUMN director_id int unsigned,
 ADD CONSTRAINT fk_director
 FOREIGN KEY (director_id) REFERENCES competencias.director (id);
 
-select * from competencia;
+-- buscamos cuantas peliculas tenemos con la combinacion de Genero Director
+set @variable_dir = 3364;
+set @variable_gen = 13;
+
+SELECT DISTINCT p.id 
+FROM pelicula p, director_pelicula dp 
+WHERE p.id = dp.pelicula_id 
+AND (@variable_dir is NULL OR dp.director_id = @variable_dir)
+AND (@variable_gen is NULL OR p.genero_id = @variable_gen);
+
+
+-- Alternativa 
+set @variable_dir = 3364;
+set @variable_gen = 13;
+
+
+SELECT COUNT(*) AS cantidad FROM competencia WHERE trim(lower(pregunta)) = lower("Bla")
+UNION all
+SELECT COUNT(distinct p.id) AS cantidad 
+FROM pelicula p, director_pelicula dp 
+WHERE p.id = dp.pelicula_id 
+AND (@variable_dir is NULL OR dp.director_id = @variable_dir)
+AND (@variable_gen is NULL OR p.genero_id = @variable_gen);
+
+----------------------------------------------
+-- Guia 3 - paso 5 - Agregamos actores a las competencias
+
+select a.id, a.nombre from actor a;
+
+ALTER TABLE competencia
+ADD COLUMN actor_id int unsigned,
+ADD CONSTRAINT fk_actor
+FOREIGN KEY (actor_id) REFERENCES competencias.actor (id);
+
+alter table actor drop FOREIGN KEY fk_actor;
+alter table actor drop column actor_id;
+
+
+-- ---------
+use competencias;
+alter table competencia drop FOREIGN KEY fk_actor;
+
+alter table votos drop FOREIGN KEY votos_ibfk_2;
+
+ALTER TABLE votos 
+  ADD CONSTRAINT `votos_ibfk_2` 
+  FOREIGN KEY (`competencia_id`) 
+ REFERENCES `competencia` (`id`)
+  ON DELETE CASCADE;
+  
+  -- ----------
+select C.ID, C.pregunta COMPETENCIA , G.NOMBRE GENERO , D.NOMBRE DIRECTOR , A.NOMBRE ACTOR
+from   competencia C,
+	   genero G,
+       DIRECTOR D,
+       ACTOR A
+where  C.GENERO_ID=16
+AND    C.DIRECTOR_ID=D.ID
+AND	   C.ACTOR_ID=A.ID;
+
