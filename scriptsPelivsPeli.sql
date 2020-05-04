@@ -26,8 +26,7 @@ CREATE TABLE votos(
 	competencia_id int not null,
     cantidad_votos int not null,
     primary key (id),
-    foreign key (pelicula_id) references competencias.pelicula(id),
-	foreign key (competencia_id) references competencias.competencia(id)
+    foreign key (pelicula_id) references competencias.pelicula(id)
 );
 -- ------------------------------------
 -- Modificamos la tabla para agregar ref de genero
@@ -48,17 +47,17 @@ ADD COLUMN actor_id int unsigned,
 ADD CONSTRAINT fk_actor
 FOREIGN KEY (actor_id) REFERENCES competencias.actor (id);
 
-alter table actor drop FOREIGN KEY fk_actor;
-alter table actor drop column actor_id;
+-- alter table actor drop FOREIGN KEY fk_actor;
+-- alter table actor drop column actor_id;
 -- ---------
-alter table competencia drop FOREIGN KEY fk_actor;
-alter table votos drop FOREIGN KEY votos_ibfk_2;
+-- alter table competencia drop FOREIGN KEY fk_actor;
+-- alter table votos drop FOREIGN KEY votos_ibfk_2;
 
-ALTER TABLE votos 
-  ADD CONSTRAINT `votos_ibfk_2` 
-  FOREIGN KEY (`competencia_id`) 
- REFERENCES `competencia` (`id`)
-  ON DELETE CASCADE;
+-- ALTER TABLE votos 
+--   ADD CONSTRAINT `votos_ibfk_2` 
+--   FOREIGN KEY (`competencia_id`) 
+--  REFERENCES `competencia` (`id`)
+--   ON DELETE CASCADE;
   
 
 
